@@ -1,0 +1,36 @@
+ManifestFileVersion: 0
+CRC: 329313583
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: f4bb976efee198fa90235f401212bca6
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 87526127b4b602bcb168f909d93f9c31
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 137
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/Mercenary2B/Resources/Prefabs/SwordAccessoryPrefab.prefab
+- Assets/SkinMods/Mercenary2B/Meshes/Sword.mesh
+- Assets/Mercenary2B/Resources/Materials/matSword.mat
+- Assets/Mercenary2B/Resources/Materials/mat2B.mat
+- Assets/Mercenary2B/Resources/Prefabs/SkirtPrefab.prefab
+- Assets/SkinMods/Mercenary2B/Icons/Mercenary2BIcon.png
+- Assets/SkinMods/Mercenary2B/Meshes/Nier2b.mesh
+Dependencies: []

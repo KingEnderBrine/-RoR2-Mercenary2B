@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7be09e9a22eec4d4aa1b735607c1881c, type: 3}
+  m_Name: Mercenary2B
+  m_EditorClassIdentifier: 
+  modDependency:
+    value: 
+    type: 0
+  bodyName: MercBody
+  nameTokenLocalizations:
+  - language: en
+    value: 2B
+  icon:
+    createFromColors: 1
+    sprite: {fileID: 0}
+    colors:
+      left:
+        serializedVersion: 2
+        rgba: 0
+      top:
+        serializedVersion: 2
+        rgba: 12369084
+      right:
+        serializedVersion: 2
+        rgba: 0
+      bottom:
+        serializedVersion: 2
+        rgba: 7578587
+    isExpanded: 1
+  unlockableName: 
+  baseSkins: []
+  meshReplacements:
+  - mesh: {fileID: 4300004, guid: ea57d0c91e933604a993700485b367f6, type: 3}
+    rendererReference:
+      accessType: 0
+      name: 
+      index: 3
+      isExpanded: 1
+  - mesh: {fileID: 4300008, guid: ea57d0c91e933604a993700485b367f6, type: 3}
+    rendererReference:
+      accessType: 0
+      name: 
+      index: 4
+      isExpanded: 1
+  gameObjectActivations: []
+  rendererInfos:
+  - defaultMaterial: {fileID: 2100000, guid: a089614b7d46edd42a6179db95c74e6a, type: 2}
+    defaultShadowCastingMode: 1
+    ignoreOverlays: 0
+    rendererReference:
+      accessType: 0
+      name: 
+      index: 3
+      isExpanded: 1
+  - defaultMaterial: {fileID: 2100000, guid: b45fa039a4d8c854ab92ff1f4abe458c, type: 2}
+    defaultShadowCastingMode: 1
+    ignoreOverlays: 0
+    rendererReference:
+      accessType: 0
+      name: 
+      index: 4
+      isExpanded: 1
+  minionSkinReplacements: []
+  projectileGhostReplacements: []
