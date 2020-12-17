@@ -343,3 +343,5 @@ BuildSkinZip.bat
 !*Unity/ProjectSettings
 *Unity/**/*.dll
 !*Unity/SkinModAssets
+*.blend1
+*.blend1.meta
