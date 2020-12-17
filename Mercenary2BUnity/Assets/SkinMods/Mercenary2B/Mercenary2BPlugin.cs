@@ -13,7 +13,7 @@ namespace Mercenary2B
     [R2APISubmoduleDependency(nameof(LoadoutAPI), nameof(LanguageAPI))]
     [NetworkCompatibility(CompatibilityLevel.NoNeedForSync)]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.KingEnderBrine.Mercenary2B","Mercenary2B","1.0.0")]
+    [BepInPlugin("com.KingEnderBrine.Mercenary2B","Mercenary2B","1.1.0")]
     public partial class Mercenary2BPlugin : BaseUnityPlugin
     {
         private static AssetBundle assetBundle;

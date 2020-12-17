@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 329313583
+CRC: 4151385207
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: f4bb976efee198fa90235f401212bca6
+    Hash: 48d5c51001eb91221028098d7bc0a7bf
   TypeTreeHash:
     serializedVersion: 2
     Hash: 87526127b4b602bcb168f909d93f9c31
@@ -26,9 +26,11 @@ ClassTypes:
 - Class: 213
   Script: {instanceID: 0}
 Assets:
+- Assets/Mercenary2B/Resources/Prefabs/butt_base.prefab
 - Assets/Mercenary2B/Resources/Prefabs/SwordAccessoryPrefab.prefab
 - Assets/SkinMods/Mercenary2B/Meshes/Sword.mesh
 - Assets/Mercenary2B/Resources/Materials/matSword.mat
+- Assets/Mercenary2B/Resources/Prefabs/breast_base.prefab
 - Assets/Mercenary2B/Resources/Materials/mat2B.mat
 - Assets/Mercenary2B/Resources/Prefabs/SkirtPrefab.prefab
 - Assets/SkinMods/Mercenary2B/Icons/Mercenary2BIcon.png

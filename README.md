@@ -1,5 +1,5 @@
 # Description
-2B skin for a Mercenary with physics for a skirt and a sword tassel.
+2B skin for a Mercenary with with physics for a skirt, breasts, butt and a sword tassel.
 
 ![](https://cdn.discordapp.com/attachments/706089456855154778/787715997233577984/Screenshot_2.png)
 
@@ -12,6 +12,11 @@ The links for models
 * Sword (Also has 2B model but it has some problems) - https://sketchfab.com/3d-models/2b-ik-rigged-b1cfb1d21cf1476eafcb7ea723fc27e2
 
 # Changelog
+**1.1.0**
+
+* Added physics for breasts and butt (is very subtle and mostly hidden by the skirt).
+* Fixed hair not being partial transparent and having black parts instead.
+* Fixed thigh weight, because they were very bad.
 
 **1.0.0**
 

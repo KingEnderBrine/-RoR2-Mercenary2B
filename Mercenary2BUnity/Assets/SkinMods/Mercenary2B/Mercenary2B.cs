@@ -15,6 +15,15 @@ namespace Mercenary2B
         
         private static GameObject skirtPrefab;
         public static GameObject SkirtPrefab => skirtPrefab ? skirtPrefab : (skirtPrefab = assetBundle.LoadAsset<GameObject>("Assets/Mercenary2B/Resources/Prefabs/SkirtPrefab.prefab"));
+        
+        private static GameObject breastBonesPrefab;
+        public static GameObject BreastBonesPrefab => breastBonesPrefab ? breastBonesPrefab : (breastBonesPrefab = assetBundle.LoadAsset<GameObject>("Assets/Mercenary2B/Resources/Prefabs/breast_base.prefab"));
+
+        private static GameObject buttBonesPrefab;
+        public static GameObject ButtBonesPrefab => buttBonesPrefab ? buttBonesPrefab : (buttBonesPrefab = assetBundle.LoadAsset<GameObject>("Assets/Mercenary2B/Resources/Prefabs/butt_base.prefab"));
+
+        private const int breastBoneIndex = 64;
+        private const int buttBoneIndex = 76;
 
         public static SkinDef SkinDef { get; private set; }
 
@@ -82,18 +91,88 @@ namespace Mercenary2B
             Destroy(modificatons.thighR1DynamicBoneCollider);
             Destroy(modificatons.thighR2DynamicBoneCollider);
             Destroy(modificatons.stomachDynamicBoneCollider);
+
+            var oldBones = modificatons.mercMeshRenderer.bones.ToList();
+            oldBones.RemoveRange(buttBoneIndex, 3);
+            oldBones.RemoveRange(breastBoneIndex, 3);
+            modificatons.mercMeshRenderer.bones = oldBones.ToArray();
+            modificatons.swordMeshRenderer.bones = oldBones.ToArray();
+
+            Destroy(modificatons.mercBreastDynamicBone);
+            Destroy(modificatons.breastBonesInstance);
+
+            Destroy(modificatons.mercButtDynamicBone);
+            Destroy(modificatons.breastBonesInstance);
         }
 
         private static ModificationObjects ApplySkinModifications(GameObject modelObject)
         {
             var characterModel = modelObject.GetComponent<CharacterModel>();
 
-            var modificatons = new ModificationObjects();
+            var modificatons = new ModificationObjects
+            {
+                mercMeshRenderer = modelObject.transform.Find("MercMesh").GetComponent<SkinnedMeshRenderer>(),
+                swordMeshRenderer = modelObject.transform.Find("MercSwordMesh").GetComponent<SkinnedMeshRenderer>()
+            };
 
+            ApplyBreastModifications(modelObject, modificatons);
+            ApplyButtModifications(modelObject, modificatons);
             ApplySwordAccessoriesModifications(modelObject, modificatons, characterModel);
             ApplySkirtModifications(modelObject, modificatons, characterModel);
 
             return modificatons;
+        }
+
+        private static void ApplyBreastModifications(GameObject modelObject, ModificationObjects modificatons)
+        {
+            var chest = modelObject.transform.Find("MercArmature/ROOT/base/stomach/chest");
+            modificatons.breastBonesInstance = Instantiate(BreastBonesPrefab, chest, false);
+
+            var newBones = modificatons.mercMeshRenderer.bones.ToList();
+            newBones.InsertRange(
+                breastBoneIndex,
+                new[]
+                { 
+                    modificatons.breastBonesInstance.transform,
+                    modificatons.breastBonesInstance.transform.GetChild(0),
+                    modificatons.breastBonesInstance.transform.GetChild(1)
+                });
+
+            modificatons.mercMeshRenderer.bones = newBones.ToArray();
+            modificatons.swordMeshRenderer.bones = newBones.ToArray();
+
+            modificatons.mercBreastDynamicBone = modelObject.AddComponent<DynamicBone>();
+            modificatons.mercBreastDynamicBone.m_Root = modificatons.breastBonesInstance.transform;
+            modificatons.mercBreastDynamicBone.m_Damping = 0.2F;
+            modificatons.mercBreastDynamicBone.m_Elasticity = 0.05F;
+            modificatons.mercBreastDynamicBone.m_Stiffness = 0.8F;
+            modificatons.mercBreastDynamicBone.m_Inert = 0.5F;
+        }
+
+        private static void ApplyButtModifications(GameObject modelObject, ModificationObjects modificatons)
+        {
+            var pelvis = modelObject.transform.Find("MercArmature/ROOT/base/pelvis");
+            modificatons.buttBonesInstance = Instantiate(ButtBonesPrefab, pelvis, false);
+
+            var newBones = modificatons.mercMeshRenderer.bones.ToList();
+            newBones.InsertRange(
+                buttBoneIndex,
+                new[]
+                {
+                    modificatons.buttBonesInstance.transform,
+                    modificatons.buttBonesInstance.transform.GetChild(0),
+                    modificatons.buttBonesInstance.transform.GetChild(1)
+                });
+
+            modificatons.mercMeshRenderer.bones = newBones.ToArray();
+            modificatons.swordMeshRenderer.bones = newBones.ToArray();
+
+            modificatons.mercButtDynamicBone = modelObject.AddComponent<DynamicBone>();
+            modificatons.mercButtDynamicBone.m_Root = modificatons.buttBonesInstance.transform;
+            modificatons.mercButtDynamicBone.m_Damping = 0.2F;
+            modificatons.mercButtDynamicBone.m_Elasticity = 0.05F;
+            modificatons.mercButtDynamicBone.m_Stiffness = 0.925F;
+            modificatons.mercButtDynamicBone.m_Inert = 0.5F;
         }
 
         private static void ApplySkirtModifications(GameObject modelObject, ModificationObjects modificatons, CharacterModel characterModel)

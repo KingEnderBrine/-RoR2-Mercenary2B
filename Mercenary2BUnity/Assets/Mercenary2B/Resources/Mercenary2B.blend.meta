@@ -259,6 +259,17 @@ ModelImporter:
     100506: Skirt
     100508: skirt.base_end
     100510: SwordAccessory
+    100512: breast.l
+    100514: breast.l_end
+    100516: breast.r
+    100518: breast.r_end
+    100520: breast_base
+    100522: butt.l
+    100524: butt.l_end
+    100526: butt.r
+    100528: butt.r_end
+    100530: butt_base
+    100532: butt_base_end
     400000: Armature
     400002: base
     400004: calf.l
@@ -515,6 +526,17 @@ ModelImporter:
     400506: Skirt
     400508: skirt.base_end
     400510: SwordAccessory
+    400512: breast.l
+    400514: breast.l_end
+    400516: breast.r
+    400518: breast.r_end
+    400520: breast_base
+    400522: butt.l
+    400524: butt.l_end
+    400526: butt.r
+    400528: butt.r_end
+    400530: butt_base
+    400532: butt_base_end
     2100000: matMerc
     2100002: matMercSword
     2100004: 2BMaterial

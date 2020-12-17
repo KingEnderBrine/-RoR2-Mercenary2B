@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: mat2B
   m_Shader: {fileID: 4800000, guid: cbd3e34258834974483a8ffcf3a6bbfd, type: 3}
-  m_ShaderKeywords: DITHER
+  m_ShaderKeywords: CUTOUT DITHER
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -127,7 +127,7 @@ Material:
     - _EliteBrightnessMin: 0
     - _EliteIndex: 0
     - _EmPower: 1
-    - _EnableCutout: 0
+    - _EnableCutout: 1
     - _FEON: 0
     - _Fade: 1
     - _FadeBias: 0
