@@ -102,7 +102,7 @@ namespace Mercenary2B
             Destroy(modificatons.breastBonesInstance);
 
             Destroy(modificatons.mercButtDynamicBone);
-            Destroy(modificatons.breastBonesInstance);
+            Destroy(modificatons.buttBonesInstance);
         }
 
         private static ModificationObjects ApplySkinModifications(GameObject modelObject)

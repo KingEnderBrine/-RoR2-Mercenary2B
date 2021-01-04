@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   modName: Mercenary2B
   author: KingEnderBrine
-  version: 1.1.0
+  version: 1.1.1
   skins:
   - {fileID: 11400000, guid: 8f03195499b239c42bc66d98328e3426, type: 2}
   additionalResources:
