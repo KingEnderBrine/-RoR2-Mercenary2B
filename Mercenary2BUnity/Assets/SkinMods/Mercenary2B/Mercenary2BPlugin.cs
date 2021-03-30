@@ -1,35 +1,45 @@
 using BepInEx;
-using R2API;
-using R2API.Utils;
+using BepInEx.Logging;
 using RoR2;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using UnityEngine;
+using System.Security;
+using System.Security.Permissions;
+using MonoMod.RuntimeDetour;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+[module: UnverifiableCode]
+[assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
+#pragma warning restore CS0618 // Type or member is obsolete
+[assembly: R2API.Utils.ManualNetworkRegistration]
+[assembly: EnigmaticThunder.Util.ManualNetworkRegistration]
 namespace Mercenary2B
 {
-    [R2APISubmoduleDependency(nameof(LoadoutAPI), nameof(LanguageAPI))]
-    [NetworkCompatibility(CompatibilityLevel.NoNeedForSync)]
-    [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.KingEnderBrine.Mercenary2B","Mercenary2B","1.1.1")]
+    
+    [BepInPlugin("com.KingEnderBrine.Mercenary2B","Mercenary2B","1.2.0")]
     public partial class Mercenary2BPlugin : BaseUnityPlugin
     {
+        internal static Mercenary2BPlugin Instance { get; private set; }
+        internal static ManualLogSource InstanceLogger { get; private set; }
+        
         private static AssetBundle assetBundle;
         private static readonly List<Material> materialsWithRoRShader = new List<Material>();
         private void Awake()
         {
+            Instance = this;
             BeforeAwake();
             using (var assetStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Mercenary2B.kingenderbrinemercenary2b"))
             {
                 assetBundle = AssetBundle.LoadFromStream(assetStream);
             }
 
-            On.RoR2.BodyCatalog.Init += BodyCatalogInit;
+            BodyCatalog.availability.CallWhenAvailable(BodyCatalogInit);
+            new Hook(typeof(Language).GetMethod(nameof(Language.LoadStrings)), (Action<Action<Language>, Language>)LanguageLoadStrings).Apply();
 
             ReplaceShaders();
-            AddLanguageTokens();
 
             AfterAwake();
         }
@@ -53,19 +63,36 @@ namespace Mercenary2B
             return material;
         }
 
-        private static void AddLanguageTokens()
+        private static void LanguageLoadStrings(Action<Language> orig, Language self)
         {
-            LanguageAPI.Add("KINGENDERBRINE_SKIN_MERCENARY2B_NAME", "2B");
-            LanguageAPI.Add("KINGENDERBRINE_SKIN_MERCENARY2B_NAME", "2B", "en");
+            orig(self);
+
+            switch(self.name.ToLower())
+            {
+                case "en":
+                    self.SetStringByToken("KINGENDERBRINE_SKIN_MERCENARY2B_NAME", "2B");
+                    break;
+                default:
+                    self.SetStringByToken("KINGENDERBRINE_SKIN_MERCENARY2B_NAME", "2B");
+                    break;
+            }
         }
 
-        private static void BodyCatalogInit(On.RoR2.BodyCatalog.orig_Init orig)
+        private static void Nothing(Action<SkinDef> orig, SkinDef self)
         {
-            orig();
 
+        }
+
+        private static void BodyCatalogInit()
+        {
             BeforeBodyCatalogInit();
 
+            var hook = new Hook(typeof(SkinDef).GetMethod(nameof(SkinDef.Awake), BindingFlags.NonPublic | BindingFlags.Instance), (Action<Action<SkinDef>, SkinDef>)Nothing);
+            hook.Apply();
+
             AddMercBodyMercenary2BSkin();
+
+            hook.Undo();
 
             AfterBodyCatalogInit();
         }
@@ -79,66 +106,77 @@ namespace Mercenary2B
             try
             {
                 var bodyPrefab = BodyCatalog.FindBodyPrefab(bodyName);
+                var modelLocator = bodyPrefab.GetComponent<ModelLocator>();
+                var mdl = modelLocator.modelTransform.gameObject;
+                var skinController = mdl.GetComponent<ModelSkinController>();
 
-                var renderers = bodyPrefab.GetComponentsInChildren<Renderer>(true);
-                var skinController = bodyPrefab.GetComponentInChildren<ModelSkinController>();
-                var mdl = skinController.gameObject;
+                var renderers = mdl.GetComponentsInChildren<Renderer>(true);
 
-                var skin = new LoadoutAPI.SkinDefInfo
+                var skin = ScriptableObject.CreateInstance<SkinDef>();
+                skin.icon = assetBundle.LoadAsset<Sprite>(@"Assets\SkinMods\Mercenary2B\Icons\Mercenary2BIcon.png");
+                skin.name = skinName;
+                skin.nameToken = "KINGENDERBRINE_SKIN_MERCENARY2B_NAME";
+                skin.rootObject = mdl;
+                skin.baseSkins = Array.Empty<SkinDef>();
+                skin.unlockableDef = null;
+                skin.gameObjectActivations = Array.Empty<SkinDef.GameObjectActivation>();
+                skin.rendererInfos = new CharacterModel.RendererInfo[]
                 {
-                    Icon = assetBundle.LoadAsset<Sprite>(@"Assets\SkinMods\Mercenary2B\Icons\Mercenary2BIcon.png"),
-                    Name = skinName,
-                    NameToken = "KINGENDERBRINE_SKIN_MERCENARY2B_NAME",
-                    RootObject = mdl,
-                    BaseSkins = Array.Empty<SkinDef>(),
-                    UnlockableName = "",
-                    GameObjectActivations = Array.Empty<SkinDef.GameObjectActivation>(),
-                    RendererInfos = new CharacterModel.RendererInfo[]
+                    new CharacterModel.RendererInfo
                     {
-                        new CharacterModel.RendererInfo
-                        {
-                            defaultMaterial = assetBundle.LoadAsset<Material>(@"Assets/Mercenary2B/Resources/Materials/mat2B.mat"),
-                            defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On,
-                            ignoreOverlays = false,
-                            renderer = renderers[3]
-                        },
-                        new CharacterModel.RendererInfo
-                        {
-                            defaultMaterial = assetBundle.LoadAsset<Material>(@"Assets/Mercenary2B/Resources/Materials/matSword.mat"),
-                            defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On,
-                            ignoreOverlays = false,
-                            renderer = renderers[4]
-                        },
+                        defaultMaterial = assetBundle.LoadAsset<Material>(@"Assets/Mercenary2B/Resources/Materials/mat2B.mat"),
+                        defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On,
+                        ignoreOverlays = false,
+                        renderer = renderers[3]
                     },
-                    MeshReplacements = new SkinDef.MeshReplacement[]
+                    new CharacterModel.RendererInfo
                     {
-                        new SkinDef.MeshReplacement
-                        {
-                            mesh = assetBundle.LoadAsset<Mesh>(@"Assets\SkinMods\Mercenary2B\Meshes\Nier2b.mesh"),
-                            renderer = renderers[3]
-                        },
-                        new SkinDef.MeshReplacement
-                        {
-                            mesh = assetBundle.LoadAsset<Mesh>(@"Assets\SkinMods\Mercenary2B\Meshes\Sword.mesh"),
-                            renderer = renderers[4]
-                        },
+                        defaultMaterial = assetBundle.LoadAsset<Material>(@"Assets/Mercenary2B/Resources/Materials/matSword.mat"),
+                        defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On,
+                        ignoreOverlays = false,
+                        renderer = renderers[4]
                     },
-                    MinionSkinReplacements = Array.Empty<SkinDef.MinionSkinReplacement>(),
-                    ProjectileGhostReplacements = Array.Empty<SkinDef.ProjectileGhostReplacement>()
                 };
+                skin.meshReplacements = new SkinDef.MeshReplacement[]
+                {
+                    new SkinDef.MeshReplacement
+                    {
+                        mesh = assetBundle.LoadAsset<Mesh>(@"Assets\SkinMods\Mercenary2B\Meshes\Nier2b.mesh"),
+                        renderer = renderers[3]
+                    },
+                    new SkinDef.MeshReplacement
+                    {
+                        mesh = assetBundle.LoadAsset<Mesh>(@"Assets\SkinMods\Mercenary2B\Meshes\Sword.mesh"),
+                        renderer = renderers[4]
+                    },
+                };
+                skin.minionSkinReplacements = Array.Empty<SkinDef.MinionSkinReplacement>();
+                skin.projectileGhostReplacements = Array.Empty<SkinDef.ProjectileGhostReplacement>();
 
                 Array.Resize(ref skinController.skins, skinController.skins.Length + 1);
-                skinController.skins[skinController.skins.Length - 1] = LoadoutAPI.CreateNewSkinDef(skin);
+                skinController.skins[skinController.skins.Length - 1] = skin;
 
-                var skinsField = typeof(BodyCatalog).GetFieldValue<SkinDef[][]>("skins");
-                skinsField[BodyCatalog.FindBodyIndex(bodyPrefab)] = skinController.skins;
-                MercBodyMercenary2BSkinAdded(skinController.skins[skinController.skins.Length - 1], bodyPrefab);
+                BodyCatalog.skins[(int)BodyCatalog.FindBodyIndex(bodyPrefab)] = skinController.skins;
+                MercBodyMercenary2BSkinAdded(skin, bodyPrefab);
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\"");
-                Debug.LogError(e);
+                InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\"");
+                InstanceLogger.LogError(e);
             }
         }
     }
+
+}
+
+namespace R2API.Utils
+{
+    [AttributeUsage(AttributeTargets.Assembly)]
+    public class ManualNetworkRegistrationAttribute : Attribute { }
+}
+
+namespace EnigmaticThunder.Util
+{
+    [AttributeUsage(AttributeTargets.Assembly)]
+    public class ManualNetworkRegistrationAttribute : Attribute { }
 }

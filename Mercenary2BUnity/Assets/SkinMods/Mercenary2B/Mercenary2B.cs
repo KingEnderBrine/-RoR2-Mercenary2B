@@ -1,5 +1,6 @@
 ﻿using Assets.SkinMods.Mercenary2B;
 using BepInEx.Logging;
+using MonoMod.RuntimeDetour;
 using RoR2;
 using System;
 using System.Collections.Generic;
@@ -29,14 +30,9 @@ namespace Mercenary2B
 
         private static readonly Dictionary<GameObject, ModificationObjects> appliedModificatons = new Dictionary<GameObject, ModificationObjects>();
 
-        private static Mercenary2BPlugin Instance { get; set; }
-        private static ManualLogSource InstanceLogger => Instance?.Logger;
-
         partial void BeforeAwake()
         {
-            Instance = this;
-
-            On.RoR2.SkinDef.Apply += SkinDefApply;
+            new Hook(typeof(SkinDef).GetMethod(nameof(SkinDef.Apply)), (Action<Action<SkinDef, GameObject>, SkinDef, GameObject>)SkinDefApply).Apply();
         }
 
         static partial void MercBodyMercenary2BSkinAdded(SkinDef skinDef, GameObject bodyPrefab)
@@ -44,7 +40,7 @@ namespace Mercenary2B
             SkinDef = skinDef;
         }
 
-        private static void SkinDefApply(On.RoR2.SkinDef.orig_Apply orig, SkinDef self, GameObject modelObject)
+        private static void SkinDefApply(Action<SkinDef, GameObject> orig, SkinDef self, GameObject modelObject)
         {
             orig(self, modelObject);
             
