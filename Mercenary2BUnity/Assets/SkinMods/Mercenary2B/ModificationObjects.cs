@@ -27,5 +27,8 @@ namespace Assets.SkinMods.Mercenary2B
 
         public GameObject buttBonesInstance;
         public DynamicBone mercButtDynamicBone;
+
+        public GameObject swordPointLight;
+        public GameObject chestPointLight;
     }
 }

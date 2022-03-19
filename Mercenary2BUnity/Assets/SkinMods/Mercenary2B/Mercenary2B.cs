@@ -5,6 +5,7 @@ using RoR2;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace Mercenary2B
@@ -28,9 +29,9 @@ namespace Mercenary2B
 
         public static SkinDef SkinDef { get; private set; }
 
-        private static readonly Dictionary<GameObject, ModificationObjects> appliedModificatons = new Dictionary<GameObject, ModificationObjects>();
+        private static readonly ConditionalWeakTable<GameObject, ModificationObjects> appliedModificatons = new ConditionalWeakTable<GameObject, ModificationObjects>();
 
-        partial void BeforeAwake()
+        partial void BeforeStart()
         {
             new Hook(typeof(SkinDef).GetMethod(nameof(SkinDef.Apply)), (Action<Action<SkinDef, GameObject>, SkinDef, GameObject>)SkinDefApply).Apply();
         }
@@ -46,8 +47,6 @@ namespace Mercenary2B
             
             try
             {
-                RemoveInvalidModelObjects();
-                
                 appliedModificatons.TryGetValue(modelObject, out var modificatons);
 
                 if (self != SkinDef)
@@ -61,7 +60,7 @@ namespace Mercenary2B
                 }
                 if (modificatons == null)
                 {
-                    appliedModificatons[modelObject] = ApplySkinModifications(modelObject);
+                    appliedModificatons.Add(modelObject, ApplySkinModifications(modelObject));
                 }
             }
             catch (Exception e)
@@ -71,34 +70,43 @@ namespace Mercenary2B
             }
         }
 
-        private static void ClearSkinModifications(ModificationObjects modificatons)
+        private static void ClearSkinModifications(ModificationObjects modifications)
         {
-            Destroy(modificatons.swordAccessoryInstance);
-            Destroy(modificatons.swordAccessoryArmature);
-            Destroy(modificatons.swordAccessoryDynamicBone);
+            Destroy(modifications.swordAccessoryInstance);
+            Destroy(modifications.swordAccessoryArmature);
+            Destroy(modifications.swordAccessoryDynamicBone);
 
-            Destroy(modificatons.skirtInstance);
-            Destroy(modificatons.skirtArmature);
-            Destroy(modificatons.skirtDynamicBone);
+            Destroy(modifications.skirtInstance);
+            Destroy(modifications.skirtArmature);
+            Destroy(modifications.skirtDynamicBone);
 
-            Destroy(modificatons.pelvisDynamicBoneCollider);
-            Destroy(modificatons.thighL1DynamicBoneCollider);
-            Destroy(modificatons.thighL2DynamicBoneCollider);
-            Destroy(modificatons.thighR1DynamicBoneCollider);
-            Destroy(modificatons.thighR2DynamicBoneCollider);
-            Destroy(modificatons.stomachDynamicBoneCollider);
+            Destroy(modifications.pelvisDynamicBoneCollider);
+            Destroy(modifications.thighL1DynamicBoneCollider);
+            Destroy(modifications.thighL2DynamicBoneCollider);
+            Destroy(modifications.thighR1DynamicBoneCollider);
+            Destroy(modifications.thighR2DynamicBoneCollider);
+            Destroy(modifications.stomachDynamicBoneCollider);
 
-            var oldBones = modificatons.mercMeshRenderer.bones.ToList();
+            var oldBones = modifications.mercMeshRenderer.bones.ToList();
             oldBones.RemoveRange(buttBoneIndex, 3);
             oldBones.RemoveRange(breastBoneIndex, 3);
-            modificatons.mercMeshRenderer.bones = oldBones.ToArray();
-            modificatons.swordMeshRenderer.bones = oldBones.ToArray();
+            modifications.mercMeshRenderer.bones = oldBones.ToArray();
+            modifications.swordMeshRenderer.bones = oldBones.ToArray();
 
-            Destroy(modificatons.mercBreastDynamicBone);
-            Destroy(modificatons.breastBonesInstance);
+            Destroy(modifications.mercBreastDynamicBone);
+            Destroy(modifications.breastBonesInstance);
 
-            Destroy(modificatons.mercButtDynamicBone);
-            Destroy(modificatons.buttBonesInstance);
+            Destroy(modifications.mercButtDynamicBone);
+            Destroy(modifications.buttBonesInstance);
+
+            if (modifications.chestPointLight)
+            {
+                modifications.chestPointLight.SetActive(true);
+            }
+            if (modifications.swordPointLight)
+            {
+                modifications.swordPointLight.SetActive(true);
+            }
         }
 
         private static ModificationObjects ApplySkinModifications(GameObject modelObject)
@@ -119,136 +127,143 @@ namespace Mercenary2B
             return modificatons;
         }
 
-        private static void ApplyBreastModifications(GameObject modelObject, ModificationObjects modificatons)
+        private static void ApplyBreastModifications(GameObject modelObject, ModificationObjects modifications)
         {
             var chest = modelObject.transform.Find("MercArmature/ROOT/base/stomach/chest");
-            modificatons.breastBonesInstance = Instantiate(BreastBonesPrefab, chest, false);
 
-            var newBones = modificatons.mercMeshRenderer.bones.ToList();
+            modifications.chestPointLight = (chest.Find("Point Light (1)") ?? chest.Find("Point Light"))?.gameObject;
+            if (modifications.chestPointLight)
+            {
+                modifications.chestPointLight.SetActive(false);
+            }
+
+            modifications.breastBonesInstance = Instantiate(BreastBonesPrefab, chest, false);
+
+            var newBones = modifications.mercMeshRenderer.bones.ToList();
             newBones.InsertRange(
                 breastBoneIndex,
                 new[]
                 { 
-                    modificatons.breastBonesInstance.transform,
-                    modificatons.breastBonesInstance.transform.GetChild(0),
-                    modificatons.breastBonesInstance.transform.GetChild(1)
+                    modifications.breastBonesInstance.transform,
+                    modifications.breastBonesInstance.transform.GetChild(0),
+                    modifications.breastBonesInstance.transform.GetChild(1)
                 });
 
-            modificatons.mercMeshRenderer.bones = newBones.ToArray();
-            modificatons.swordMeshRenderer.bones = newBones.ToArray();
+            modifications.mercMeshRenderer.bones = newBones.ToArray();
+            modifications.swordMeshRenderer.bones = newBones.ToArray();
 
-            modificatons.mercBreastDynamicBone = modelObject.AddComponent<DynamicBone>();
-            modificatons.mercBreastDynamicBone.m_Root = modificatons.breastBonesInstance.transform;
-            modificatons.mercBreastDynamicBone.m_Damping = 0.2F;
-            modificatons.mercBreastDynamicBone.m_Elasticity = 0.05F;
-            modificatons.mercBreastDynamicBone.m_Stiffness = 0.8F;
-            modificatons.mercBreastDynamicBone.m_Inert = 0.5F;
+            modifications.mercBreastDynamicBone = modelObject.AddComponent<DynamicBone>();
+            modifications.mercBreastDynamicBone.m_Root = modifications.breastBonesInstance.transform;
+            modifications.mercBreastDynamicBone.m_Damping = 0.2F;
+            modifications.mercBreastDynamicBone.m_Elasticity = 0.05F;
+            modifications.mercBreastDynamicBone.m_Stiffness = 0.8F;
+            modifications.mercBreastDynamicBone.m_Inert = 0.5F;
         }
 
-        private static void ApplyButtModifications(GameObject modelObject, ModificationObjects modificatons)
+        private static void ApplyButtModifications(GameObject modelObject, ModificationObjects modifications)
         {
             var pelvis = modelObject.transform.Find("MercArmature/ROOT/base/pelvis");
-            modificatons.buttBonesInstance = Instantiate(ButtBonesPrefab, pelvis, false);
+            modifications.buttBonesInstance = Instantiate(ButtBonesPrefab, pelvis, false);
 
-            var newBones = modificatons.mercMeshRenderer.bones.ToList();
+            var newBones = modifications.mercMeshRenderer.bones.ToList();
             newBones.InsertRange(
                 buttBoneIndex,
                 new[]
                 {
-                    modificatons.buttBonesInstance.transform,
-                    modificatons.buttBonesInstance.transform.GetChild(0),
-                    modificatons.buttBonesInstance.transform.GetChild(1)
+                    modifications.buttBonesInstance.transform,
+                    modifications.buttBonesInstance.transform.GetChild(0),
+                    modifications.buttBonesInstance.transform.GetChild(1)
                 });
 
-            modificatons.mercMeshRenderer.bones = newBones.ToArray();
-            modificatons.swordMeshRenderer.bones = newBones.ToArray();
+            modifications.mercMeshRenderer.bones = newBones.ToArray();
+            modifications.swordMeshRenderer.bones = newBones.ToArray();
 
-            modificatons.mercButtDynamicBone = modelObject.AddComponent<DynamicBone>();
-            modificatons.mercButtDynamicBone.m_Root = modificatons.buttBonesInstance.transform;
-            modificatons.mercButtDynamicBone.m_Damping = 0.2F;
-            modificatons.mercButtDynamicBone.m_Elasticity = 0.05F;
-            modificatons.mercButtDynamicBone.m_Stiffness = 0.925F;
-            modificatons.mercButtDynamicBone.m_Inert = 0.5F;
+            modifications.mercButtDynamicBone = modelObject.AddComponent<DynamicBone>();
+            modifications.mercButtDynamicBone.m_Root = modifications.buttBonesInstance.transform;
+            modifications.mercButtDynamicBone.m_Damping = 0.2F;
+            modifications.mercButtDynamicBone.m_Elasticity = 0.05F;
+            modifications.mercButtDynamicBone.m_Stiffness = 0.925F;
+            modifications.mercButtDynamicBone.m_Inert = 0.5F;
         }
 
-        private static void ApplySkirtModifications(GameObject modelObject, ModificationObjects modificatons, CharacterModel characterModel)
+        private static void ApplySkirtModifications(GameObject modelObject, ModificationObjects modifications, CharacterModel characterModel)
         {
             var stomach = modelObject.transform.Find("MercArmature/ROOT/base/stomach");
-            modificatons.skirtInstance = Instantiate(SkirtPrefab, modelObject.transform, false);
+            modifications.skirtInstance = Instantiate(SkirtPrefab, modelObject.transform, false);
 
-            modificatons.skirtArmature = modificatons.skirtInstance.transform.Find("SkirtArmature").gameObject;
-            modificatons.skirtArmature.transform.SetParent(stomach, false);
+            modifications.skirtArmature = modifications.skirtInstance.transform.Find("SkirtArmature").gameObject;
+            modifications.skirtArmature.transform.SetParent(stomach, false);
 
-            modificatons.stomachDynamicBoneCollider = stomach.gameObject.AddComponent<DynamicBoneCollider>();
-            modificatons.stomachDynamicBoneCollider.m_Center = new Vector3(0, 0.7F, 0);
-            modificatons.stomachDynamicBoneCollider.m_Height = 0.6F;
-            modificatons.stomachDynamicBoneCollider.m_Direction = DynamicBoneCollider.Direction.X;
-            modificatons.stomachDynamicBoneCollider.m_Bound = DynamicBoneCollider.Bound.Outside;
+            modifications.stomachDynamicBoneCollider = stomach.gameObject.AddComponent<DynamicBoneCollider>();
+            modifications.stomachDynamicBoneCollider.m_Center = new Vector3(0, 0.7F, 0);
+            modifications.stomachDynamicBoneCollider.m_Height = 0.6F;
+            modifications.stomachDynamicBoneCollider.m_Direction = DynamicBoneCollider.Direction.X;
+            modifications.stomachDynamicBoneCollider.m_Bound = DynamicBoneCollider.Bound.Outside;
 
             var pelvis = modelObject.transform.Find("MercArmature/ROOT/base/pelvis");
-            modificatons.pelvisDynamicBoneCollider = pelvis.gameObject.AddComponent<DynamicBoneCollider>();
-            modificatons.pelvisDynamicBoneCollider.m_Center = new Vector3(0, 0.2F, -0.05F);
-            modificatons.pelvisDynamicBoneCollider.m_Height = 0.54F;
-            modificatons.pelvisDynamicBoneCollider.m_Radius = 0.25F;
-            modificatons.pelvisDynamicBoneCollider.m_Direction = DynamicBoneCollider.Direction.X;
-            modificatons.pelvisDynamicBoneCollider.m_Bound = DynamicBoneCollider.Bound.Outside;
+            modifications.pelvisDynamicBoneCollider = pelvis.gameObject.AddComponent<DynamicBoneCollider>();
+            modifications.pelvisDynamicBoneCollider.m_Center = new Vector3(0, 0.2F, -0.05F);
+            modifications.pelvisDynamicBoneCollider.m_Height = 0.54F;
+            modifications.pelvisDynamicBoneCollider.m_Radius = 0.25F;
+            modifications.pelvisDynamicBoneCollider.m_Direction = DynamicBoneCollider.Direction.X;
+            modifications.pelvisDynamicBoneCollider.m_Bound = DynamicBoneCollider.Bound.Outside;
 
             var thighl = pelvis.Find("thigh.l");
-            modificatons.thighL1DynamicBoneCollider = thighl.gameObject.AddComponent<DynamicBoneCollider>();
-            modificatons.thighL1DynamicBoneCollider.m_Center = new Vector3(-0.1F, 0.24F, 0.04F);
-            modificatons.thighL1DynamicBoneCollider.m_Height = 0.6F;
-            modificatons.thighL1DynamicBoneCollider.m_Radius = 0.1F;
-            modificatons.thighL1DynamicBoneCollider.m_Direction = DynamicBoneCollider.Direction.Y;
-            modificatons.thighL1DynamicBoneCollider.m_Bound = DynamicBoneCollider.Bound.Outside;
+            modifications.thighL1DynamicBoneCollider = thighl.gameObject.AddComponent<DynamicBoneCollider>();
+            modifications.thighL1DynamicBoneCollider.m_Center = new Vector3(-0.1F, 0.24F, 0.04F);
+            modifications.thighL1DynamicBoneCollider.m_Height = 0.6F;
+            modifications.thighL1DynamicBoneCollider.m_Radius = 0.1F;
+            modifications.thighL1DynamicBoneCollider.m_Direction = DynamicBoneCollider.Direction.Y;
+            modifications.thighL1DynamicBoneCollider.m_Bound = DynamicBoneCollider.Bound.Outside;
 
-            modificatons.thighL2DynamicBoneCollider = thighl.gameObject.AddComponent<DynamicBoneCollider>();
-            modificatons.thighL2DynamicBoneCollider.m_Center = new Vector3(0.1F, 0.24F, 0.04F);
-            modificatons.thighL2DynamicBoneCollider.m_Height = 0.6F;
-            modificatons.thighL2DynamicBoneCollider.m_Radius = 0.1F;
-            modificatons.thighL2DynamicBoneCollider.m_Direction = DynamicBoneCollider.Direction.Y;
-            modificatons.thighL2DynamicBoneCollider.m_Bound = DynamicBoneCollider.Bound.Outside;
+            modifications.thighL2DynamicBoneCollider = thighl.gameObject.AddComponent<DynamicBoneCollider>();
+            modifications.thighL2DynamicBoneCollider.m_Center = new Vector3(0.1F, 0.24F, 0.04F);
+            modifications.thighL2DynamicBoneCollider.m_Height = 0.6F;
+            modifications.thighL2DynamicBoneCollider.m_Radius = 0.1F;
+            modifications.thighL2DynamicBoneCollider.m_Direction = DynamicBoneCollider.Direction.Y;
+            modifications.thighL2DynamicBoneCollider.m_Bound = DynamicBoneCollider.Bound.Outside;
 
             var thighr = pelvis.Find("thigh.r");
-            modificatons.thighR1DynamicBoneCollider = thighr.gameObject.AddComponent<DynamicBoneCollider>();
-            modificatons.thighR1DynamicBoneCollider.m_Center = new Vector3(-0.1F, 0.24F, 0.04F);
-            modificatons.thighR1DynamicBoneCollider.m_Height = 0.6F;
-            modificatons.thighR1DynamicBoneCollider.m_Radius = 0.1F;
-            modificatons.thighR1DynamicBoneCollider.m_Direction = DynamicBoneCollider.Direction.Y;
-            modificatons.thighR1DynamicBoneCollider.m_Bound = DynamicBoneCollider.Bound.Outside;
+            modifications.thighR1DynamicBoneCollider = thighr.gameObject.AddComponent<DynamicBoneCollider>();
+            modifications.thighR1DynamicBoneCollider.m_Center = new Vector3(-0.1F, 0.24F, 0.04F);
+            modifications.thighR1DynamicBoneCollider.m_Height = 0.6F;
+            modifications.thighR1DynamicBoneCollider.m_Radius = 0.1F;
+            modifications.thighR1DynamicBoneCollider.m_Direction = DynamicBoneCollider.Direction.Y;
+            modifications.thighR1DynamicBoneCollider.m_Bound = DynamicBoneCollider.Bound.Outside;
 
-            modificatons.thighR2DynamicBoneCollider = thighr.gameObject.AddComponent<DynamicBoneCollider>();
-            modificatons.thighR2DynamicBoneCollider.m_Center = new Vector3(0.1F, 0.24F, 0.04F);
-            modificatons.thighR2DynamicBoneCollider.m_Height = 0.6F;
-            modificatons.thighR2DynamicBoneCollider.m_Radius = 0.1F;
-            modificatons.thighR2DynamicBoneCollider.m_Direction = DynamicBoneCollider.Direction.Y;
-            modificatons.thighR2DynamicBoneCollider.m_Bound = DynamicBoneCollider.Bound.Outside;
+            modifications.thighR2DynamicBoneCollider = thighr.gameObject.AddComponent<DynamicBoneCollider>();
+            modifications.thighR2DynamicBoneCollider.m_Center = new Vector3(0.1F, 0.24F, 0.04F);
+            modifications.thighR2DynamicBoneCollider.m_Height = 0.6F;
+            modifications.thighR2DynamicBoneCollider.m_Radius = 0.1F;
+            modifications.thighR2DynamicBoneCollider.m_Direction = DynamicBoneCollider.Direction.Y;
+            modifications.thighR2DynamicBoneCollider.m_Bound = DynamicBoneCollider.Bound.Outside;
 
-            modificatons.skirtDynamicBone = modelObject.AddComponent<DynamicBone>();
-            modificatons.skirtDynamicBone.m_Root = modificatons.skirtArmature.transform.GetChild(0);
-            modificatons.skirtDynamicBone.m_Exclusions = new List<Transform> { modificatons.skirtDynamicBone.m_Root.Find("skirt.base") };
-            modificatons.skirtDynamicBone.m_Damping = 0.5F;
-            modificatons.skirtDynamicBone.m_Elasticity = 0.25F;
-            modificatons.skirtDynamicBone.m_Stiffness = 0;
-            modificatons.skirtDynamicBone.m_Inert = 0.75F;
-            modificatons.skirtDynamicBone.m_Radius = 0.15F;
-            modificatons.skirtDynamicBone.m_RadiusDistrib = new AnimationCurve(new Keyframe(0, 0.6F), new Keyframe(1, 1))
+            modifications.skirtDynamicBone = modelObject.AddComponent<DynamicBone>();
+            modifications.skirtDynamicBone.m_Root = modifications.skirtArmature.transform.GetChild(0);
+            modifications.skirtDynamicBone.m_Exclusions = new List<Transform> { modifications.skirtDynamicBone.m_Root.Find("skirt.base") };
+            modifications.skirtDynamicBone.m_Damping = 0.5F;
+            modifications.skirtDynamicBone.m_Elasticity = 0.25F;
+            modifications.skirtDynamicBone.m_Stiffness = 0;
+            modifications.skirtDynamicBone.m_Inert = 0.75F;
+            modifications.skirtDynamicBone.m_Radius = 0.15F;
+            modifications.skirtDynamicBone.m_RadiusDistrib = new AnimationCurve(new Keyframe(0, 0.6F), new Keyframe(1, 1))
             {
                 postWrapMode = WrapMode.Loop,
                 preWrapMode = WrapMode.Loop
             };
-            modificatons.skirtDynamicBone.m_Colliders = new List<DynamicBoneCollider>
+            modifications.skirtDynamicBone.m_Colliders = new List<DynamicBoneCollider>
             {
-                modificatons.pelvisDynamicBoneCollider,
-                modificatons.thighL1DynamicBoneCollider,
-                modificatons.thighL2DynamicBoneCollider,
-                modificatons.thighR1DynamicBoneCollider,
-                modificatons.thighR2DynamicBoneCollider,
-                modificatons.stomachDynamicBoneCollider
+                modifications.pelvisDynamicBoneCollider,
+                modifications.thighL1DynamicBoneCollider,
+                modifications.thighL2DynamicBoneCollider,
+                modifications.thighR1DynamicBoneCollider,
+                modifications.thighR2DynamicBoneCollider,
+                modifications.stomachDynamicBoneCollider
             };
 
             Array.Resize(ref characterModel.baseRendererInfos, characterModel.baseRendererInfos.Length + 1);
 
-            var skirtRenderer = modificatons.skirtInstance.transform.Find("Skirt").GetComponent<SkinnedMeshRenderer>();
+            var skirtRenderer = modifications.skirtInstance.transform.Find("Skirt").GetComponent<SkinnedMeshRenderer>();
             characterModel.baseRendererInfos[characterModel.baseRendererInfos.Length - 1] = new CharacterModel.RendererInfo
             {
                 renderer = skirtRenderer,
@@ -258,25 +273,32 @@ namespace Mercenary2B
             };
         }
 
-        private static void ApplySwordAccessoriesModifications(GameObject modelObject, ModificationObjects modificatons, CharacterModel characterModel)
+        private static void ApplySwordAccessoriesModifications(GameObject modelObject, ModificationObjects modifications, CharacterModel characterModel)
         {
             var swordBase = modelObject.transform.Find("MercArmature/ROOT/base/stomach/chest/SwingCenter/SwordBase");
-            modificatons.swordAccessoryInstance = Instantiate(SwordAccessoryPrefab, modelObject.transform, false);
 
-            modificatons.swordAccessoryArmature = modificatons.swordAccessoryInstance.transform.Find("SwordAccessoryArmature").gameObject;
-            modificatons.swordAccessoryArmature.transform.SetParent(swordBase, false);
+            modifications.swordPointLight = swordBase.Find("Point Light")?.gameObject;
+            if (modifications.swordPointLight)
+            {
+                modifications.swordPointLight.SetActive(false);
+            }
 
-            modificatons.swordAccessoryDynamicBone = modelObject.AddComponent<DynamicBone>();
-            modificatons.swordAccessoryDynamicBone.m_Root = modificatons.swordAccessoryArmature.transform.GetChild(0);
-            modificatons.swordAccessoryDynamicBone.m_Force = new Vector3(0, -0.05F, 0);
-            modificatons.swordAccessoryDynamicBone.m_Damping = 0;
-            modificatons.swordAccessoryDynamicBone.m_Elasticity = 0.05F;
-            modificatons.swordAccessoryDynamicBone.m_Stiffness = 0;
-            modificatons.swordAccessoryDynamicBone.m_Inert = 0;
+            modifications.swordAccessoryInstance = Instantiate(SwordAccessoryPrefab, modelObject.transform, false);
+
+            modifications.swordAccessoryArmature = modifications.swordAccessoryInstance.transform.Find("SwordAccessoryArmature").gameObject;
+            modifications.swordAccessoryArmature.transform.SetParent(swordBase, false);
+
+            modifications.swordAccessoryDynamicBone = modelObject.AddComponent<DynamicBone>();
+            modifications.swordAccessoryDynamicBone.m_Root = modifications.swordAccessoryArmature.transform.GetChild(0);
+            modifications.swordAccessoryDynamicBone.m_Force = new Vector3(0, -0.05F, 0);
+            modifications.swordAccessoryDynamicBone.m_Damping = 0;
+            modifications.swordAccessoryDynamicBone.m_Elasticity = 0.05F;
+            modifications.swordAccessoryDynamicBone.m_Stiffness = 0;
+            modifications.swordAccessoryDynamicBone.m_Inert = 0;
 
             Array.Resize(ref characterModel.baseRendererInfos, characterModel.baseRendererInfos.Length + 1);
 
-            var swordAccessoryRenderer = modificatons.swordAccessoryInstance.transform.Find("SwordAccessory").GetComponent<SkinnedMeshRenderer>();
+            var swordAccessoryRenderer = modifications.swordAccessoryInstance.transform.Find("SwordAccessory").GetComponent<SkinnedMeshRenderer>();
             characterModel.baseRendererInfos[characterModel.baseRendererInfos.Length - 1] = new CharacterModel.RendererInfo
             {
                 renderer = swordAccessoryRenderer,
@@ -284,14 +306,6 @@ namespace Mercenary2B
                 defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On,
                 defaultMaterial = swordAccessoryRenderer.sharedMaterial
             };
-        }
-
-        private static void RemoveInvalidModelObjects()
-        {
-            foreach (var modelObject in appliedModificatons.Keys.Where(el => !el).ToList())
-            {
-                appliedModificatons.Remove(modelObject);
-            }
         }
     }
 }

@@ -345,3 +345,4 @@ BuildSkinZip.bat
 !*Unity/SkinModAssets
 *.blend1
 *.blend1.meta
+*Unity/Assets/Test scripts

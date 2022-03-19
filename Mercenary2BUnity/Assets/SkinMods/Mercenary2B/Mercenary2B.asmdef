@@ -1,17 +1,22 @@
 
 {
     "name": "Mercenary2B",
-    "references": [],
+    "references": [
+        "Unity.Addressables",
+        "Unity.ResourceManager"
+    ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "Assembly-CSharp.refstub.dll",
+        "RoR2-nstrip.dll",
         "BepInEx.dll",
         "MonoMod.RuntimeDetour.dll"
     ],
     "autoReferenced": false,
-    "defineConstraints": []
-    }
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

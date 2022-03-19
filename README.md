@@ -12,6 +12,11 @@ The links for models
 * Sword (Also has 2B model but it has some problems) - https://sketchfab.com/3d-models/2b-ik-rigged-b1cfb1d21cf1476eafcb7ea723fc27e2
 
 # Changelog
+**1.2.1**
+
+* Fixes for `Survivors of the Void` update.
+* Disabled sword and chest lights
+
 **1.2.0**
 
 * Removed R2API dependency.

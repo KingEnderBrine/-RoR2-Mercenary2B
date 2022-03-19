@@ -15,6 +15,10 @@ MonoBehaviour:
   modDependency:
     value: 
     type: 0
+  config:
+    generateEnableConfig: 0
+    enableConfigDefaultValue: 1
+    isExpanded: 1
   bodyName: MercBody
   nameTokenLocalizations:
   - language: en
@@ -38,6 +42,7 @@ MonoBehaviour:
     isExpanded: 1
   unlockableName: 
   baseSkins: []
+  renderersSource: 0
   meshReplacements:
   - mesh: {fileID: 4300004, guid: ea57d0c91e933604a993700485b367f6, type: 3}
     rendererReference:
