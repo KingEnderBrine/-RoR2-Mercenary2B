@@ -1,4 +1,4 @@
-﻿using Assets.SkinMods.Mercenary2B;
+﻿using BepInEx.Configuration;
 using BepInEx.Logging;
 using MonoMod.RuntimeDetour;
 using RoR2;
@@ -30,10 +30,12 @@ namespace Mercenary2B
         public static SkinDef SkinDef { get; private set; }
 
         private static readonly ConditionalWeakTable<GameObject, ModificationObjects> appliedModificatons = new ConditionalWeakTable<GameObject, ModificationObjects>();
+        private static ConfigEntry<bool> DisableSkirt;
 
         partial void BeforeStart()
         {
             new Hook(typeof(SkinDef).GetMethod(nameof(SkinDef.Apply)), (Action<Action<SkinDef, GameObject>, SkinDef, GameObject>)SkinDefApply).Apply();
+            DisableSkirt = Config.Bind("Main", "DisableSkirt", false, "Disable skirt on the skin");
         }
 
         static partial void MercBodyMercenary2BSkinAdded(SkinDef skinDef, GameObject bodyPrefab)
@@ -76,9 +78,12 @@ namespace Mercenary2B
             Destroy(modifications.swordAccessoryArmature);
             Destroy(modifications.swordAccessoryDynamicBone);
 
-            Destroy(modifications.skirtInstance);
-            Destroy(modifications.skirtArmature);
-            Destroy(modifications.skirtDynamicBone);
+            if (!DisableSkirt.Value)
+            {
+                Destroy(modifications.skirtInstance);
+                Destroy(modifications.skirtArmature);
+                Destroy(modifications.skirtDynamicBone);
+            }
 
             Destroy(modifications.pelvisDynamicBoneCollider);
             Destroy(modifications.thighL1DynamicBoneCollider);
@@ -122,7 +127,10 @@ namespace Mercenary2B
             ApplyBreastModifications(modelObject, modificatons);
             ApplyButtModifications(modelObject, modificatons);
             ApplySwordAccessoriesModifications(modelObject, modificatons, characterModel);
-            ApplySkirtModifications(modelObject, modificatons, characterModel);
+            if (!DisableSkirt.Value)
+            {
+                ApplySkirtModifications(modelObject, modificatons, characterModel);
+            }
 
             return modificatons;
         }

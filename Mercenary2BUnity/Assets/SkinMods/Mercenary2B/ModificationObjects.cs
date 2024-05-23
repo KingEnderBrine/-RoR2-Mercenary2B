@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Assets.SkinMods.Mercenary2B
+namespace Mercenary2B
 {
     public class ModificationObjects
     {

@@ -18,7 +18,7 @@ using UnityEngine.AddressableAssets;
 namespace Mercenary2B
 {
     
-    [BepInPlugin("com.KingEnderBrine.Mercenary2B","Mercenary2B","1.3.0")]
+    [BepInPlugin("com.KingEnderBrine.Mercenary2B","Mercenary2B","1.3.1")]
     public partial class Mercenary2BPlugin : BaseUnityPlugin
     {
         internal static Mercenary2BPlugin Instance { get; private set; }
@@ -29,7 +29,9 @@ namespace Mercenary2B
         private void Start()
         {
             Instance = this;
+
             BeforeStart();
+
             using (var assetStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Mercenary2B.kingenderbrinemercenary2b"))
             {
                 assetBundle = AssetBundle.LoadFromStream(assetStream);
@@ -51,9 +53,7 @@ namespace Mercenary2B
         private static void ReplaceShaders()
         {
             LoadMaterialsWithReplacedShader(@"RoR2/Base/Shaders/HGStandard.shader"
-                ,@"Assets/Mercenary2B/Resources/Materials/mat2B.mat"
-                ,@"Assets/Mercenary2B/Resources/Materials/matSword.mat"
-);
+                ,@"Assets/Mercenary2B/Resources/Materials/mat2B.mat"                ,@"Assets/Mercenary2B/Resources/Materials/matSword.mat");
         }
 
         private static void LoadMaterialsWithReplacedShader(string shaderPath, params string[] materialPaths)
@@ -72,7 +72,6 @@ namespace Mercenary2B
             orig(self);
 
             self.SetStringByToken("KINGENDERBRINE_SKIN_MERCENARY2B_NAME", "2B");
-
         }
 
         private static void Nothing(Action<SkinDef> orig, SkinDef self)
@@ -103,9 +102,26 @@ namespace Mercenary2B
             try
             {
                 var bodyPrefab = BodyCatalog.FindBodyPrefab(bodyName);
+                if (!bodyPrefab)
+                {
+                    InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin because \"{bodyName}\" doesn't exist");
+                    return;
+                }
+
                 var modelLocator = bodyPrefab.GetComponent<ModelLocator>();
+                if (!modelLocator)
+                {
+                    InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\" because it doesn't have \"ModelLocator\" component");
+                    return;
+                }
+
                 var mdl = modelLocator.modelTransform.gameObject;
-                var skinController = mdl.GetComponent<ModelSkinController>();
+                var skinController = mdl ? mdl.GetComponent<ModelSkinController>() : null;
+                if (!skinController)
+                {
+                    InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\" because it doesn't have \"ModelSkinController\" component");
+                    return;
+                }
 
                 var renderers = mdl.GetComponentsInChildren<Renderer>(true);
 
@@ -138,14 +154,14 @@ namespace Mercenary2B
                             defaultMaterial = assetBundle.LoadAsset<Material>(@"Assets/Mercenary2B/Resources/Materials/mat2B.mat"),
                             defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On,
                             ignoreOverlays = false,
-                            renderer = renderers[3]
+                            renderer = renderers[7]
                         },
                         new CharacterModel.RendererInfo
                         {
                             defaultMaterial = assetBundle.LoadAsset<Material>(@"Assets/Mercenary2B/Resources/Materials/matSword.mat"),
                             defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On,
                             ignoreOverlays = false,
-                            renderer = renderers[4]
+                            renderer = renderers[8]
                         },
                     };
                 });
@@ -156,12 +172,12 @@ namespace Mercenary2B
                         new SkinDef.MeshReplacement
                         {
                             mesh = assetBundle.LoadAsset<Mesh>(@"Assets\SkinMods\Mercenary2B\Meshes\Nier2b.mesh"),
-                            renderer = renderers[3]
+                            renderer = renderers[7]
                         },
                         new SkinDef.MeshReplacement
                         {
                             mesh = assetBundle.LoadAsset<Mesh>(@"Assets\SkinMods\Mercenary2B\Meshes\Sword.mesh"),
-                            renderer = renderers[4]
+                            renderer = renderers[8]
                         },
                     };
                 });
@@ -180,11 +196,16 @@ namespace Mercenary2B
                 BodyCatalog.skins[(int)BodyCatalog.FindBodyIndex(bodyPrefab)] = skinController.skins;
                 MercBodyMercenary2BSkinAdded(skin, bodyPrefab);
             }
-            catch (Exception e)
+            catch (FieldException e)
             {
                 InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\"");
                 InstanceLogger.LogWarning($"Field causing issue: {e.Message}");
                 InstanceLogger.LogError(e.InnerException);
+            }
+            catch (Exception e)
+            {
+                InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\"");
+                InstanceLogger.LogError(e);
             }
         }
 
@@ -196,8 +217,13 @@ namespace Mercenary2B
             }
             catch (Exception e)
             {
-                throw new Exception(message, e);
+                throw new FieldException(message, e);
             }
+        }
+
+        private class FieldException : Exception
+        {
+            public FieldException(string message, Exception innerException) : base(message, innerException) { }
         }
     }
 }

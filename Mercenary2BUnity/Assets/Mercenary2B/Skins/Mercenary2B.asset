@@ -48,13 +48,13 @@ MonoBehaviour:
     rendererReference:
       accessType: 0
       name: 
-      index: 3
+      index: 7
       isExpanded: 1
   - mesh: {fileID: 4300008, guid: ea57d0c91e933604a993700485b367f6, type: 3}
     rendererReference:
       accessType: 0
       name: 
-      index: 4
+      index: 8
       isExpanded: 1
   gameObjectActivations: []
   rendererInfos:
@@ -64,7 +64,7 @@ MonoBehaviour:
     rendererReference:
       accessType: 0
       name: 
-      index: 3
+      index: 7
       isExpanded: 1
   - defaultMaterial: {fileID: 2100000, guid: b45fa039a4d8c854ab92ff1f4abe458c, type: 2}
     defaultShadowCastingMode: 1
@@ -72,7 +72,7 @@ MonoBehaviour:
     rendererReference:
       accessType: 0
       name: 
-      index: 4
+      index: 8
       isExpanded: 1
   minionSkinReplacements: []
   projectileGhostReplacements: []
