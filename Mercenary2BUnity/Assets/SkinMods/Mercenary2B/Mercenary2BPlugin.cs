@@ -10,6 +10,7 @@ using System.Security.Permissions;
 using MonoMod.RuntimeDetour.HookGen;
 using RoR2.ContentManagement;
 using UnityEngine.AddressableAssets;
+using RoR2.Projectile;
 
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -18,7 +19,7 @@ using UnityEngine.AddressableAssets;
 namespace Mercenary2B
 {
     
-    [BepInPlugin("com.KingEnderBrine.Mercenary2B","Mercenary2B","1.3.1")]
+    [BepInPlugin("com.KingEnderBrine.Mercenary2B","Mercenary2B","1.3.2")]
     public partial class Mercenary2BPlugin : BaseUnityPlugin
     {
         internal static Mercenary2BPlugin Instance { get; private set; }
@@ -74,21 +75,11 @@ namespace Mercenary2B
             self.SetStringByToken("KINGENDERBRINE_SKIN_MERCENARY2B_NAME", "2B");
         }
 
-        private static void Nothing(Action<SkinDef> orig, SkinDef self)
-        {
-
-        }
-
         private static void BodyCatalogInit()
         {
             BeforeBodyCatalogInit();
 
-            var awake = typeof(SkinDef).GetMethod(nameof(SkinDef.Awake), BindingFlags.NonPublic | BindingFlags.Instance);
-            HookEndpointManager.Add(awake, (Action<Action<SkinDef>, SkinDef>)Nothing);
-
             AddMercBodyMercenary2BSkin();
-            
-            HookEndpointManager.Remove(awake, (Action<Action<SkinDef>, SkinDef>)Nothing);
 
             AfterBodyCatalogInit();
         }
@@ -124,8 +115,12 @@ namespace Mercenary2B
                 }
 
                 var renderers = mdl.GetComponentsInChildren<Renderer>(true);
+                var lights = mdl.GetComponentsInChildren<Light>(true);
 
                 var skin = ScriptableObject.CreateInstance<SkinDef>();
+                var skinParams = ScriptableObject.CreateInstance<SkinDefParams>();
+                skin.skinDefParams = skinParams;
+
                 TryCatchThrow("Icon", () =>
                 {
                     skin.icon = assetBundle.LoadAsset<Sprite>(@"Assets\SkinMods\Mercenary2B\Icons\Mercenary2BIcon.png");
@@ -135,7 +130,10 @@ namespace Mercenary2B
                 skin.rootObject = mdl;
                 TryCatchThrow("Base Skins", () =>
                 {
-                    skin.baseSkins = Array.Empty<SkinDef>();
+                    skin.baseSkins = new SkinDef[] 
+                    { 
+                        skinController.skins[0],
+                    };
                 });
                 TryCatchThrow("Unlockable Name", () =>
                 {
@@ -143,57 +141,62 @@ namespace Mercenary2B
                 });
                 TryCatchThrow("Game Object Activations", () =>
                 {
-                    skin.gameObjectActivations = Array.Empty<SkinDef.GameObjectActivation>();
+                    skinParams.gameObjectActivations = Array.Empty<SkinDefParams.GameObjectActivation>();
                 });
                 TryCatchThrow("Renderer Infos", () =>
                 {
-                    skin.rendererInfos = new CharacterModel.RendererInfo[]
+                    skinParams.rendererInfos = new CharacterModel.RendererInfo[]
                     {
                         new CharacterModel.RendererInfo
                         {
                             defaultMaterial = assetBundle.LoadAsset<Material>(@"Assets/Mercenary2B/Resources/Materials/mat2B.mat"),
                             defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On,
                             ignoreOverlays = false,
-                            renderer = renderers[7]
+                            renderer = renderers.First(r => r.name == "MercMesh")
                         },
                         new CharacterModel.RendererInfo
                         {
                             defaultMaterial = assetBundle.LoadAsset<Material>(@"Assets/Mercenary2B/Resources/Materials/matSword.mat"),
                             defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On,
                             ignoreOverlays = false,
-                            renderer = renderers[8]
+                            renderer = renderers.First(r => r.name == "MercSwordMesh")
                         },
                     };
                 });
                 TryCatchThrow("Mesh Replacements", () =>
                 {
-                    skin.meshReplacements = new SkinDef.MeshReplacement[]
+                    skinParams.meshReplacements = new SkinDefParams.MeshReplacement[]
                     {
-                        new SkinDef.MeshReplacement
+                        new SkinDefParams.MeshReplacement
                         {
                             mesh = assetBundle.LoadAsset<Mesh>(@"Assets\SkinMods\Mercenary2B\Meshes\Nier2b.mesh"),
-                            renderer = renderers[7]
+                            renderer = renderers.First(r => r.name == "MercMesh")
                         },
-                        new SkinDef.MeshReplacement
+                        new SkinDefParams.MeshReplacement
                         {
                             mesh = assetBundle.LoadAsset<Mesh>(@"Assets\SkinMods\Mercenary2B\Meshes\Sword.mesh"),
-                            renderer = renderers[8]
+                            renderer = renderers.First(r => r.name == "MercSwordMesh")
                         },
+                    };
+                });
+                TryCatchThrow("Light Infos", () =>
+                {
+                    skinParams.lightReplacements = new CharacterModel.LightInfo[]
+                    {
                     };
                 });
                 TryCatchThrow("Minion Skin Replacements", () =>
                 {
-                    skin.minionSkinReplacements = Array.Empty<SkinDef.MinionSkinReplacement>();
+                    skinParams.minionSkinReplacements = Array.Empty<SkinDefParams.MinionSkinReplacement>();
                 });
                 TryCatchThrow("Projectile Ghost Replacements", () =>
                 {
-                    skin.projectileGhostReplacements = Array.Empty<SkinDef.ProjectileGhostReplacement>();
+                    skinParams.projectileGhostReplacements = Array.Empty<SkinDefParams.ProjectileGhostReplacement>();
                 });
 
                 Array.Resize(ref skinController.skins, skinController.skins.Length + 1);
                 skinController.skins[skinController.skins.Length - 1] = skin;
 
-                BodyCatalog.skins[(int)BodyCatalog.FindBodyIndex(bodyPrefab)] = skinController.skins;
                 MercBodyMercenary2BSkinAdded(skin, bodyPrefab);
             }
             catch (FieldException e)
@@ -218,6 +221,14 @@ namespace Mercenary2B
             catch (Exception e)
             {
                 throw new FieldException(message, e);
+            }
+        }
+        
+        private static void TryAddComponent<T>(GameObject obj) where T : Component
+        {
+            if (!obj.GetComponent<T>())
+            {
+                obj.AddComponent<T>();
             }
         }
 

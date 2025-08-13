@@ -1,4 +1,9 @@
+**1.3.2**
+
+* Fixes for `Memory Optimization` update.
+
 **1.3.1**
+
 * Fixes for `Devotion` update.
 * Added config to disable skirt.
 * Fixed screenshots in readme.

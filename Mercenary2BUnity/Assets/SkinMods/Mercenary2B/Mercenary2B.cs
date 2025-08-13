@@ -2,16 +2,22 @@
 using BepInEx.Logging;
 using MonoMod.RuntimeDetour;
 using RoR2;
+using RoR2.ContentManagement;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace Mercenary2B
 {
     public partial class Mercenary2BPlugin
     {
+        private delegate IEnumerator ApplyAsyncHandler(SkinDef self, GameObject modelObject, List<AssetReferenceT<Material>> loadedMaterials, List<AssetReferenceT<Mesh>> loadedMeshes, AsyncReferenceHandleUnloadType unloadType);
+        private delegate IEnumerator ApplyAsyncHookHandler(ApplyAsyncHandler orig, SkinDef self, GameObject modelObject, List<AssetReferenceT<Material>> loadedMaterials, List<AssetReferenceT<Mesh>> loadedMeshes, AsyncReferenceHandleUnloadType unloadType);
+
         private static GameObject swordAccessoryPrefab;
         public static GameObject SwordAccessoryPrefab => swordAccessoryPrefab ? swordAccessoryPrefab : (swordAccessoryPrefab = assetBundle.LoadAsset<GameObject>("Assets/Mercenary2B/Resources/Prefabs/SwordAccessoryPrefab.prefab"));
         
@@ -29,12 +35,12 @@ namespace Mercenary2B
 
         public static SkinDef SkinDef { get; private set; }
 
-        private static readonly ConditionalWeakTable<GameObject, ModificationObjects> appliedModificatons = new ConditionalWeakTable<GameObject, ModificationObjects>();
+        private static readonly ConditionalWeakTable<GameObject, ModificationObjects> appliedModifications = new ConditionalWeakTable<GameObject, ModificationObjects>();
         private static ConfigEntry<bool> DisableSkirt;
 
         partial void BeforeStart()
         {
-            new Hook(typeof(SkinDef).GetMethod(nameof(SkinDef.Apply)), (Action<Action<SkinDef, GameObject>, SkinDef, GameObject>)SkinDefApply).Apply();
+            new Hook(typeof(SkinDef).GetMethod(nameof(SkinDef.ApplyAsync)), (ApplyAsyncHookHandler)SkinDefApplyAsync).Apply();
             DisableSkirt = Config.Bind("Main", "DisableSkirt", false, "Disable skirt on the skin");
         }
 
@@ -43,31 +49,36 @@ namespace Mercenary2B
             SkinDef = skinDef;
         }
 
-        private static void SkinDefApply(Action<SkinDef, GameObject> orig, SkinDef self, GameObject modelObject)
+        private static IEnumerator SkinDefApplyAsync(ApplyAsyncHandler orig, SkinDef self, GameObject modelObject, List<AssetReferenceT<Material>> loadedMaterials, List<AssetReferenceT<Mesh>> loadedMeshes, AsyncReferenceHandleUnloadType unloadType)
         {
-            orig(self, modelObject);
+            var enumerator = orig(self, modelObject, loadedMaterials, loadedMeshes, unloadType);
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+            }
             
             try
             {
-                appliedModificatons.TryGetValue(modelObject, out var modificatons);
+                appliedModifications.TryGetValue(modelObject, out var modifications);
 
                 if (self != SkinDef)
                 {
-                    if (modificatons != null)
+                    if (modifications != null)
                     {
-                        appliedModificatons.Remove(modelObject);
-                        ClearSkinModifications(modificatons);
+                        appliedModifications.Remove(modelObject);
+                        ClearSkinModifications(modifications);
                     }
-                    return;
+                    yield break;
                 }
-                if (modificatons == null)
+
+                if (modifications == null)
                 {
-                    appliedModificatons.Add(modelObject, ApplySkinModifications(modelObject));
+                    appliedModifications.Add(modelObject, ApplySkinModifications(modelObject));
                 }
             }
             catch (Exception e)
             {
-                InstanceLogger.LogWarning("An error occured while adding accessories to a Mercenary2B skin");
+                InstanceLogger.LogWarning("An error occurred while adding accessories to a Mercenary2B skin");
                 InstanceLogger.LogError(e);
             }
         }
@@ -118,21 +129,21 @@ namespace Mercenary2B
         {
             var characterModel = modelObject.GetComponent<CharacterModel>();
 
-            var modificatons = new ModificationObjects
+            var modifications = new ModificationObjects
             {
                 mercMeshRenderer = modelObject.transform.Find("MercMesh").GetComponent<SkinnedMeshRenderer>(),
                 swordMeshRenderer = modelObject.transform.Find("MercSwordMesh").GetComponent<SkinnedMeshRenderer>()
             };
 
-            ApplyBreastModifications(modelObject, modificatons);
-            ApplyButtModifications(modelObject, modificatons);
-            ApplySwordAccessoriesModifications(modelObject, modificatons, characterModel);
+            ApplyBreastModifications(modelObject, modifications);
+            ApplyButtModifications(modelObject, modifications);
+            ApplySwordAccessoriesModifications(modelObject, modifications, characterModel);
             if (!DisableSkirt.Value)
             {
-                ApplySkirtModifications(modelObject, modificatons, characterModel);
+                ApplySkirtModifications(modelObject, modifications, characterModel);
             }
 
-            return modificatons;
+            return modifications;
         }
 
         private static void ApplyBreastModifications(GameObject modelObject, ModificationObjects modifications)
