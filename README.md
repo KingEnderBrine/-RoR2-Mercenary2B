@@ -1,9 +1,9 @@
 # Description
 2B skin for a Mercenary with with physics for a skirt, breasts, butt and a sword tassel.
 
-![](https://github.com/KingEnderBrine/-RoR2-Mercenary2B/blob/c6b522bd091c6b8aa8bbe5df184c61b6ba54202a/Screenshots/Screenshot_3.png)
+![](https://github.com/KingEnderBrine/-RoR2-Mercenary2B/blob/c6b522bd091c6b8aa8bbe5df184c61b6ba54202a/Screenshots/Screenshot_3.png?raw=true)
 
-![](https://github.com/KingEnderBrine/-RoR2-Mercenary2B/blob/c6b522bd091c6b8aa8bbe5df184c61b6ba54202a/Screenshots/Screenshot_1.png) ![](https://github.com/KingEnderBrine/-RoR2-Mercenary2B/blob/c6b522bd091c6b8aa8bbe5df184c61b6ba54202a/Screenshots/Screenshot_2.png)
+![](https://github.com/KingEnderBrine/-RoR2-Mercenary2B/blob/c6b522bd091c6b8aa8bbe5df184c61b6ba54202a/Screenshots/Screenshot_1.png?raw=true) ![](https://github.com/KingEnderBrine/-RoR2-Mercenary2B/blob/c6b522bd091c6b8aa8bbe5df184c61b6ba54202a/Screenshots/Screenshot_2.png?raw=true)
 
 # Credits
 The links for models

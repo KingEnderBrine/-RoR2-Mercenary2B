@@ -19,7 +19,7 @@ using RoR2.Projectile;
 namespace Mercenary2B
 {
     
-    [BepInPlugin("com.KingEnderBrine.Mercenary2B","Mercenary2B","1.3.2")]
+    [BepInPlugin("com.KingEnderBrine.Mercenary2B","Mercenary2B","1.3.3")]
     public partial class Mercenary2BPlugin : BaseUnityPlugin
     {
         internal static Mercenary2BPlugin Instance { get; private set; }

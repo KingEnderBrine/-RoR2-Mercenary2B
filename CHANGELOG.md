@@ -1,3 +1,7 @@
+**1.3.3**
+
+* Readme update, fix screenshots.
+
 **1.3.2**
 
 * Fixes for `Memory Optimization` update.
