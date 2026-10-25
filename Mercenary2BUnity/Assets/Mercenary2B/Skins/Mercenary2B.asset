@@ -18,8 +18,13 @@ MonoBehaviour:
   config:
     generateEnableConfig: 0
     enableConfigDefaultValue: 1
-    isExpanded: 1
+    configEntries:
+    - name: EnableSkirt
+      description: 
+      enabledByDefault: 1
   bodyName: MercBody
+  createLobbySkin: 1
+  lobbySkinOverride: {fileID: 11400000, guid: f02d7713d21937142ae97bef08ee2acf, type: 2}
   nameTokenLocalizations:
   - language: en
     value: 2B
@@ -39,45 +44,184 @@ MonoBehaviour:
       bottom:
         serializedVersion: 2
         rgba: 7578587
-    isExpanded: 1
   unlockableName: 
+  referenceModel: {fileID: 100184, guid: ea57d0c91e933604a993700485b367f6, type: 3}
   baseSkins:
   - accessType: 0
     name: 
     index: 0
-    isExpanded: 0
-  renderersSource: 0
   meshReplacements:
-  - mesh: {fileID: 4300004, guid: ea57d0c91e933604a993700485b367f6, type: 3}
+  - useAddressablesKey: 0
+    mesh: {fileID: 4300004, guid: ea57d0c91e933604a993700485b367f6, type: 3}
+    meshKey: 
     rendererReference:
       accessType: 0
       name: MercMesh
       path: 
-      isExpanded: 1
-  - mesh: {fileID: 4300008, guid: ea57d0c91e933604a993700485b367f6, type: 3}
+    enableFromConfig: 
+  - useAddressablesKey: 0
+    mesh: {fileID: 4300008, guid: ea57d0c91e933604a993700485b367f6, type: 3}
+    meshKey: 
     rendererReference:
       accessType: 0
       name: MercSwordMesh
       path: 
-      isExpanded: 1
-  gameObjectActivations: []
+    enableFromConfig: 
+  gameObjectActivations:
+  - accessType: 2
+    rendererName: 
+    path: MercArmature/ROOT/base/stomach/chest/SwingCenter/SwordBase/Point Light
+    spawnPrefabOnModelObject: 0
+    shouldActivate: 0
+    localPosition: {x: 0, y: 0, z: 0}
+    localRotation: {x: 0, y: 0, z: 0}
+    localScale: {x: 0, y: 0, z: 0}
+    useAddressablesKey: 0
+    prefab: {fileID: 0}
+    prefabKey: 
+    addBonesToRenderers: 0
+    dynamicBonesColliderPaths:
+      list: []
+    enableFromConfig: 
+  - accessType: 2
+    rendererName: 
+    path: MercArmature/ROOT/base/stomach/chest/Point Light
+    spawnPrefabOnModelObject: 0
+    shouldActivate: 0
+    localPosition: {x: 0, y: 0, z: 0}
+    localRotation: {x: 0, y: 0, z: 0}
+    localScale: {x: 0, y: 0, z: 0}
+    useAddressablesKey: 0
+    prefab: {fileID: 0}
+    prefabKey: 
+    addBonesToRenderers: 0
+    dynamicBonesColliderPaths:
+      list: []
+    enableFromConfig: 
+  - accessType: 2
+    rendererName: 
+    path: MercArmature/ROOT/base/stomach/chest/SwingCenter/SwordBase
+    spawnPrefabOnModelObject: 1
+    shouldActivate: 0
+    localPosition: {x: 0, y: 0, z: 0}
+    localRotation: {x: 0, y: 0, z: 0}
+    localScale: {x: 1, y: 1, z: 1}
+    useAddressablesKey: 0
+    prefab: {fileID: 8708703824263015170, guid: 607bd876fd968c24fb7ede18da9bd559,
+      type: 3}
+    prefabKey: 
+    addBonesToRenderers: 0
+    dynamicBonesColliderPaths:
+      list: []
+    enableFromConfig: 
+  - accessType: 2
+    rendererName: 
+    path: MercArmature/ROOT/base/pelvis/thigh.l
+    spawnPrefabOnModelObject: 1
+    shouldActivate: 0
+    localPosition: {x: 0, y: 0, z: 0}
+    localRotation: {x: 0, y: 0, z: 0}
+    localScale: {x: 1, y: 1, z: 1}
+    useAddressablesKey: 0
+    prefab: {fileID: 2261682519387363708, guid: b3314b7d7c817364f81357d2b48718a7,
+      type: 3}
+    prefabKey: 
+    addBonesToRenderers: 0
+    dynamicBonesColliderPaths:
+      list: []
+    enableFromConfig: 
+  - accessType: 2
+    rendererName: 
+    path: MercArmature/ROOT/base/pelvis/thigh.r
+    spawnPrefabOnModelObject: 1
+    shouldActivate: 0
+    localPosition: {x: 0, y: 0, z: 0}
+    localRotation: {x: 0, y: 0, z: 0}
+    localScale: {x: 1, y: 1, z: 1}
+    useAddressablesKey: 0
+    prefab: {fileID: 8263622825774591138, guid: fd68a12713df5c746940c307c130cfb1,
+      type: 3}
+    prefabKey: 
+    addBonesToRenderers: 0
+    dynamicBonesColliderPaths:
+      list: []
+    enableFromConfig: 
+  - accessType: 2
+    rendererName: 
+    path: MercArmature/ROOT/base/pelvis
+    spawnPrefabOnModelObject: 1
+    shouldActivate: 0
+    localPosition: {x: 0.0000008702916, y: 0.20239921, z: -0.0045842472}
+    localRotation: {x: 78.44302, y: 0.028002258, z: 0.03399968}
+    localScale: {x: 1, y: 1, z: 1}
+    useAddressablesKey: 0
+    prefab: {fileID: 5249418942109216077, guid: b77280648b4f2734db9e26d585134d1d,
+      type: 3}
+    prefabKey: 
+    addBonesToRenderers: 1
+    dynamicBonesColliderPaths:
+      list: []
+    enableFromConfig: 
+  - accessType: 2
+    rendererName: 
+    path: MercArmature/ROOT/base/stomach/chest
+    spawnPrefabOnModelObject: 1
+    shouldActivate: 0
+    localPosition: {x: -0.00019986137, y: 0.08633288, z: 0.012166716}
+    localRotation: {x: 81.93136, y: 173.53476, z: 173.87614}
+    localScale: {x: 0.99999976, y: 0.9999999, z: 0.9999999}
+    useAddressablesKey: 0
+    prefab: {fileID: 5090500714251943674, guid: 842ef399db3df0d4d810973da0e61257,
+      type: 3}
+    prefabKey: 
+    addBonesToRenderers: 1
+    dynamicBonesColliderPaths:
+      list: []
+    enableFromConfig: 
+  - accessType: 2
+    rendererName: 
+    path: MercArmature/ROOT/base/stomach
+    spawnPrefabOnModelObject: 1
+    shouldActivate: 0
+    localPosition: {x: 0, y: 0, z: 0}
+    localRotation: {x: -0.000010245284, y: -0.000000026972357, z: 0.000000010759469}
+    localScale: {x: 1, y: 1, z: 1}
+    useAddressablesKey: 0
+    prefab: {fileID: 5737099506722460447, guid: 4673aa2db1ae10842a7610c61306283c,
+      type: 3}
+    prefabKey: 
+    addBonesToRenderers: 0
+    dynamicBonesColliderPaths:
+      list:
+      - MercArmature/ROOT/base/pelvis/butt_base
+      - MercArmature/ROOT/base/pelvis/thigh.l/ThighLDBCollider
+      - MercArmature/ROOT/base/pelvis/thigh.r/ThighRDBCollider
+    enableFromConfig: EnableSkirt
   rendererInfos:
-  - defaultMaterial: {fileID: 2100000, guid: a089614b7d46edd42a6179db95c74e6a, type: 2}
+  - useAddressablesKey: 0
+    defaultMaterial: {fileID: 2100000, guid: a089614b7d46edd42a6179db95c74e6a, type: 2}
+    materialKey: 
     defaultShadowCastingMode: 1
     ignoreOverlays: 0
     rendererReference:
       accessType: 0
       name: MercMesh
       path: 
-      isExpanded: 1
-  - defaultMaterial: {fileID: 2100000, guid: b45fa039a4d8c854ab92ff1f4abe458c, type: 2}
+    hideOnDeath: 0
+    ignoresMaterialOverrides: 0
+    enableFromConfig: 
+  - useAddressablesKey: 0
+    defaultMaterial: {fileID: 2100000, guid: b45fa039a4d8c854ab92ff1f4abe458c, type: 2}
+    materialKey: 
     defaultShadowCastingMode: 1
     ignoreOverlays: 0
     rendererReference:
       accessType: 0
       name: MercSwordMesh
       path: 
-      isExpanded: 1
+    hideOnDeath: 0
+    ignoresMaterialOverrides: 0
+    enableFromConfig: 
   minionSkinReplacements: []
   projectileGhostReplacements: []
   lightReplacements: []

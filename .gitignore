@@ -341,8 +341,9 @@ BuildSkinZip.bat
 !*Unity/Assets
 *Unity/Assets/TextMesh Pro
 !*Unity/ProjectSettings
+!*Unity/Packages
+!*Unity/Packages/manifest.json
+!*Unity/Packages/packages-lock.json
 *Unity/**/*.dll
-!*Unity/SkinModAssets
 *.blend1
 *.blend1.meta
-*Unity/Assets/Test scripts
